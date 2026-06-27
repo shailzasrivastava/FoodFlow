@@ -1,6 +1,6 @@
 # Foodflow — Backend API
 
-FastAPI backend for the Foodflow platform (HimShakti Food Processing Unit).  
+FastAPI backend for the Foodflow platform 
 Handles the product catalog, inventory, quality control, production tracking, and admin authentication.
 
 ---
@@ -34,7 +34,6 @@ pip install -r requirements.txt
 
 ### 5. Set up environment variables
 ```bash
-# Copy the example file and fill in your values
 copy .env.example .env        # Windows
 cp .env.example .env          # macOS / Linux
 ```
@@ -114,33 +113,3 @@ backend/
 | GET/POST | `/api/production` | List / create production runs |
 | GET | `/api/production/{id}` | Single production run |
 | GET/POST | `/api/inquiries` | List / create WhatsApp inquiries |
-
----
-
-## Error responses
-
-All errors return JSON in this shape:
-```json
-{ "detail": "Human-readable error message here." }
-```
-
-| Status | When |
-|--------|------|
-| 400 | Validation error, duplicate SKU, stock overdraft |
-| 401 | Missing or invalid Bearer token |
-| 404 | Resource not found |
-| 500 | Unexpected server error |
-
----
-
-## Testing
-
-Import `foodflow-thunder-collection.json` into Thunder Client (VS Code extension) to get all endpoints pre-configured with example request bodies and saved responses.
-
-Or use the interactive Swagger UI at http://localhost:8000/docs — every endpoint can be tested directly in the browser.
-
----
-
-## Note on data persistence
-
-The current store is **in-memory only** — data resets every time the server restarts. MongoDB Atlas integration is planned for Week 5, at which point only `store.py` needs to be replaced; all routers stay the same.

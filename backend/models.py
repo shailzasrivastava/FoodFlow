@@ -8,7 +8,6 @@ from typing import Optional
 from pydantic import BaseModel, Field, field_validator
 
 
-# ─── Product ────────────────────────────────────────────────────────────────
 
 class ProductBase(BaseModel):
     name: str = Field(..., min_length=1, max_length=120, description="Product display name")
@@ -41,7 +40,6 @@ class Product(ProductBase):
     model_config = {"from_attributes": True}
 
 
-# ─── Inventory ───────────────────────────────────────────────────────────────
 
 class InventoryItemBase(BaseModel):
     sku: str = Field(..., description="Matches a Product.sku")
@@ -82,7 +80,7 @@ class Transaction(TransactionCreate):
     model_config = {"from_attributes": True}
 
 
-# ─── Quality Control ─────────────────────────────────────────────────────────
+
 
 class QCCheckResult(BaseModel):
     check_name: str
@@ -105,7 +103,7 @@ class QCRecord(QCRecordCreate):
     model_config = {"from_attributes": True}
 
 
-# ─── Production ──────────────────────────────────────────────────────────────
+
 
 class ProductionRunCreate(BaseModel):
     batch_id: str = Field(..., description="Unique batch identifier e.g. HK-2026-001")
@@ -131,7 +129,6 @@ class ProductionRun(ProductionRunCreate):
     model_config = {"from_attributes": True}
 
 
-# ─── WhatsApp Inquiry ────────────────────────────────────────────────────────
 
 class InquiryCreate(BaseModel):
     product_id: str
@@ -147,7 +144,7 @@ class Inquiry(InquiryCreate):
     model_config = {"from_attributes": True}
 
 
-# ─── Generic responses ───────────────────────────────────────────────────────
+
 
 class MessageResponse(BaseModel):
     message: str

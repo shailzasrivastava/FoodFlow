@@ -1,7 +1,4 @@
-/**
- * Card — flexible content tile. Used for product listings (with `image`)
- * and for stat/summary tiles elsewhere in the app (without one).
- */
+
 export default function Card({ image, imageAlt = '', meta, title, description, footer, className = '' }) {
   return (
     <div
