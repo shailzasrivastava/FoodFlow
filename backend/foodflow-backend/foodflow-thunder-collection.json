@@ -1,0 +1,1126 @@
+{
+  "clientName": "Thunder Client",
+  "collectionName": "Foodflow API",
+  "collectionId": "foodflow-api-v2",
+  "dateExported": "2026-06-27",
+  "version": "1.2",
+  "folders": [
+    {
+      "id": "f-health",
+      "name": "Health",
+      "containerId": ""
+    },
+    {
+      "id": "f-auth",
+      "name": "Auth",
+      "containerId": ""
+    },
+    {
+      "id": "f-products",
+      "name": "Products",
+      "containerId": ""
+    },
+    {
+      "id": "f-inventory",
+      "name": "Inventory",
+      "containerId": ""
+    },
+    {
+      "id": "f-qc",
+      "name": "QC",
+      "containerId": ""
+    },
+    {
+      "id": "f-production",
+      "name": "Production",
+      "containerId": ""
+    },
+    {
+      "id": "f-inquiries",
+      "name": "Inquiries",
+      "containerId": ""
+    }
+  ],
+  "requests": [
+    {
+      "id": "h-01",
+      "name": "Health check",
+      "method": "GET",
+      "url": "{{base_url}}/",
+      "containerId": "f-health",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "type": "none"
+      },
+      "tests": [
+        {
+          "type": "res-code",
+          "action": "equal",
+          "value": "200"
+        }
+      ],
+      "responses": [
+        {
+          "id": "h-01-example",
+          "name": "Example \u2014 200",
+          "status": 200,
+          "time": "12ms",
+          "headers": [
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"ok\",\n  \"service\": \"Foodflow API\",\n  \"version\": \"0.2.0\"\n}"
+        }
+      ]
+    },
+    {
+      "id": "a-01",
+      "name": "Login \u2014 success \u2192 200",
+      "method": "POST",
+      "url": "{{base_url}}/api/auth/login",
+      "containerId": "f-auth",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"himshakti2026\"\n}"
+      },
+      "tests": [
+        {
+          "type": "res-code",
+          "action": "equal",
+          "value": "200"
+        }
+      ],
+      "responses": [
+        {
+          "id": "a-01-example",
+          "name": "Example \u2014 200",
+          "status": 200,
+          "time": "12ms",
+          "headers": [
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"token\": \"98978394-0262-4f23-a100-772ccf32ff37\",\n  \"username\": \"admin\",\n  \"message\": \"Login successful.\"\n}"
+        }
+      ]
+    },
+    {
+      "id": "a-02",
+      "name": "Login \u2014 wrong password \u2192 401",
+      "method": "POST",
+      "url": "{{base_url}}/api/auth/login",
+      "containerId": "f-auth",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"wrong\"\n}"
+      },
+      "tests": [
+        {
+          "type": "res-code",
+          "action": "equal",
+          "value": "401"
+        }
+      ],
+      "responses": [
+        {
+          "id": "a-02-example",
+          "name": "Example \u2014 401",
+          "status": 401,
+          "time": "12ms",
+          "headers": [
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"detail\": \"Incorrect username or password.\"\n}"
+        }
+      ]
+    },
+    {
+      "id": "a-03",
+      "name": "Get current user (me) \u2192 200",
+      "method": "GET",
+      "url": "{{base_url}}/api/auth/me",
+      "containerId": "f-auth",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Authorization",
+          "value": "Bearer {{admin_token}}"
+        }
+      ],
+      "body": {
+        "type": "none"
+      },
+      "tests": [
+        {
+          "type": "res-code",
+          "action": "equal",
+          "value": "200"
+        }
+      ],
+      "responses": [
+        {
+          "id": "a-03-example",
+          "name": "Example \u2014 200",
+          "status": 200,
+          "time": "12ms",
+          "headers": [
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"username\": \"admin\",\n  \"created_at\": \"2026-06-27T12:19:49.810645+00:00\"\n}"
+        }
+      ],
+      "notes": "Replace TOKEN with value from Login response"
+    },
+    {
+      "id": "a-04",
+      "name": "Logout \u2192 200",
+      "method": "POST",
+      "url": "{{base_url}}/api/auth/logout",
+      "containerId": "f-auth",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Authorization",
+          "value": "Bearer {{admin_token}}"
+        }
+      ],
+      "body": {
+        "type": "none"
+      },
+      "tests": [
+        {
+          "type": "res-code",
+          "action": "equal",
+          "value": "200"
+        }
+      ],
+      "responses": [
+        {
+          "id": "a-04-example",
+          "name": "Example \u2014 200",
+          "status": 200,
+          "time": "12ms",
+          "headers": [
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"message\": \"Logged out successfully.\"\n}"
+        }
+      ]
+    },
+    {
+      "id": "p-01",
+      "name": "List all products \u2192 200",
+      "method": "GET",
+      "url": "{{base_url}}/api/products",
+      "containerId": "f-products",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "type": "none"
+      },
+      "tests": [
+        {
+          "type": "res-code",
+          "action": "equal",
+          "value": "200"
+        }
+      ],
+      "responses": [
+        {
+          "id": "p-01-example",
+          "name": "Example \u2014 200",
+          "status": 200,
+          "time": "12ms",
+          "headers": [
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "body": "[\n  {\n    \"name\": \"Cold-Pressed Mustard Oil\",\n    \"weight\": \"1L\",\n    \"price\": 320.0,\n    \"category\": \"Oils\",\n    \"description\": \"Traditional kolhu (wooden press) mustard oil.\",\n    \"ingredients\": [\n      \"mustard seeds\"\n    ],\n    \"sku\": \"HIM-MUS-1L\",\n    \"image_url\": null,\n    \"id\": \"92e44456-41a4-484e-a090-a8852d978e54\",\n    \"created_at\": \"2026-06-27T12:19:49.698191+00:00\",\n    \"updated_at\": \"2026-06-27T12:19:49.698191+00:00\"\n  },\n  {\n    \"name\": \"Hand-Pounded Turmeric\",\n    \"weight\": \"250g\",\n    \"price\": 180.0,\n    \"category\": \"Spices\",\n    \"description\": \"Sun-dried turmeric, stone-ground in small batches.\",\n    \"ingredients\": [\n      \"organic turmeric\"\n    ],\n    \"sku\": \"HIM-TUR-250\",\n    \"image_url\": null,\n    \"id\": \"a1ac3511-97b8-4079-a1e5-ff97a6cfb8c9\",\n    \"created_at\": \"2026-06-27T12:19:49.698191+00:00\",\n    \"updated_at\": \"2026-06-27T12:19:49.698191+00:00\"\n  }\n]"
+        }
+      ]
+    },
+    {
+      "id": "p-02",
+      "name": "Search products ?q=honey \u2192 200",
+      "method": "GET",
+      "url": "{{base_url}}/api/products/search?q=honey",
+      "containerId": "f-products",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "type": "none"
+      },
+      "tests": [
+        {
+          "type": "res-code",
+          "action": "equal",
+          "value": "200"
+        }
+      ],
+      "responses": [
+        {
+          "id": "p-02-example",
+          "name": "Example \u2014 200",
+          "status": 200,
+          "time": "12ms",
+          "headers": [
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "body": "[\n  {\n    \"name\": \"Pahadi Wild Honey\",\n    \"weight\": \"500g\",\n    \"price\": 450.0,\n    \"category\": \"Honey\",\n    \"description\": \"Raw, single-origin honey from forest hives.\",\n    \"ingredients\": [\n      \"wild honey\"\n    ],\n    \"sku\": \"HIM-HON-500\",\n    \"image_url\": null,\n    \"id\": \"adcb5bfe-368d-44a4-9369-2dfda57066c8\",\n    \"created_at\": \"2026-06-27T12:19:49.698191+00:00\",\n    \"updated_at\": \"2026-06-27T12:19:49.698191+00:00\"\n  }\n]"
+        }
+      ]
+    },
+    {
+      "id": "p-03",
+      "name": "Search \u2014 missing q \u2192 400",
+      "method": "GET",
+      "url": "{{base_url}}/api/products/search",
+      "containerId": "f-products",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "type": "none"
+      },
+      "tests": [
+        {
+          "type": "res-code",
+          "action": "equal",
+          "value": "400"
+        }
+      ],
+      "responses": [
+        {
+          "id": "p-03-example",
+          "name": "Example \u2014 400",
+          "status": 400,
+          "time": "12ms",
+          "headers": [
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"detail\": \"Query parameter 'q' is required.\"\n}"
+        }
+      ]
+    },
+    {
+      "id": "p-04",
+      "name": "Get single product \u2192 200",
+      "method": "GET",
+      "url": "{{base_url}}/api/products/92e44456-41a4-484e-a090-a8852d978e54",
+      "containerId": "f-products",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "type": "none"
+      },
+      "tests": [
+        {
+          "type": "res-code",
+          "action": "equal",
+          "value": "200"
+        }
+      ],
+      "responses": [
+        {
+          "id": "p-04-example",
+          "name": "Example \u2014 200",
+          "status": 200,
+          "time": "12ms",
+          "headers": [
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"name\": \"Cold-Pressed Mustard Oil\",\n  \"weight\": \"1L\",\n  \"price\": 499.0,\n  \"category\": \"Oils\",\n  \"description\": \"Traditional kolhu mustard oil.\",\n  \"ingredients\": [\n    \"mustard seeds\"\n  ],\n  \"sku\": \"HIM-MUS-1L\",\n  \"image_url\": null,\n  \"id\": \"92e44456-41a4-484e-a090-a8852d978e54\",\n  \"created_at\": \"2026-06-27T12:19:49.698191+00:00\",\n  \"updated_at\": \"2026-06-27T12:19:49.837577+00:00\"\n}"
+        }
+      ],
+      "notes": "Replace the ID in the URL with a real product ID from List all products"
+    },
+    {
+      "id": "p-05",
+      "name": "Get product \u2014 not found \u2192 404",
+      "method": "GET",
+      "url": "{{base_url}}/api/products/does-not-exist",
+      "containerId": "f-products",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "type": "none"
+      },
+      "tests": [
+        {
+          "type": "res-code",
+          "action": "equal",
+          "value": "404"
+        }
+      ],
+      "responses": [
+        {
+          "id": "p-05-example",
+          "name": "Example \u2014 404",
+          "status": 404,
+          "time": "12ms",
+          "headers": [
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"detail\": \"Product 'does-not-exist' not found.\"\n}"
+        }
+      ]
+    },
+    {
+      "id": "p-06",
+      "name": "Create product \u2192 201",
+      "method": "POST",
+      "url": "{{base_url}}/api/products",
+      "containerId": "f-products",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Authorization",
+          "value": "Bearer {{admin_token}}"
+        }
+      ],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"name\": \"Spicy Mango Pickle\",\n  \"weight\": \"300g\",\n  \"price\": 150,\n  \"description\": \"Traditional spicy mango pickle.\",\n  \"ingredients\": [\n    \"mango\",\n    \"mustard\"\n  ],\n  \"sku\": \"HIM-PIC-300\",\n  \"category\": \"Pickles\"\n}"
+      },
+      "tests": [
+        {
+          "type": "res-code",
+          "action": "equal",
+          "value": "201"
+        }
+      ],
+      "responses": [
+        {
+          "id": "p-06-example",
+          "name": "Example \u2014 201",
+          "status": 201,
+          "time": "12ms",
+          "headers": [
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"name\": \"Spicy Mango Pickle\",\n  \"weight\": \"300g\",\n  \"price\": 150.0,\n  \"description\": \"Traditional spicy mango pickle.\",\n  \"ingredients\": [\n    \"mango\",\n    \"mustard\"\n  ],\n  \"sku\": \"HIM-PIC-300\",\n  \"image_url\": null,\n  \"category\": \"Pickles\",\n  \"id\": \"a7b6e57a-812d-4d14-98c4-b20a7b755767\",\n  \"created_at\": \"2026-06-27T12:19:49.833057+00:00\",\n  \"updated_at\": \"2026-06-27T12:19:49.833057+00:00\"\n}"
+        }
+      ]
+    },
+    {
+      "id": "p-07",
+      "name": "Create product \u2014 duplicate SKU \u2192 400",
+      "method": "POST",
+      "url": "{{base_url}}/api/products",
+      "containerId": "f-products",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Authorization",
+          "value": "Bearer {{admin_token}}"
+        }
+      ],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"name\": \"Dupe\",\n  \"weight\": \"100g\",\n  \"price\": 50,\n  \"description\": \"Test.\",\n  \"ingredients\": [],\n  \"sku\": \"HIM-HON-500\",\n  \"category\": \"Test\"\n}"
+      },
+      "tests": [
+        {
+          "type": "res-code",
+          "action": "equal",
+          "value": "400"
+        }
+      ],
+      "responses": [
+        {
+          "id": "p-07-example",
+          "name": "Example \u2014 400",
+          "status": 400,
+          "time": "12ms",
+          "headers": [
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"detail\": \"SKU 'HIM-HON-500' already exists.\"\n}"
+        }
+      ]
+    },
+    {
+      "id": "p-08",
+      "name": "Update product price \u2192 200",
+      "method": "PUT",
+      "url": "{{base_url}}/api/products/92e44456-41a4-484e-a090-a8852d978e54",
+      "containerId": "f-products",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Authorization",
+          "value": "Bearer {{admin_token}}"
+        }
+      ],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"price\": 499.0\n}"
+      },
+      "tests": [
+        {
+          "type": "res-code",
+          "action": "equal",
+          "value": "200"
+        }
+      ],
+      "responses": [
+        {
+          "id": "p-08-example",
+          "name": "Example \u2014 200",
+          "status": 200,
+          "time": "12ms",
+          "headers": [
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"name\": \"Cold-Pressed Mustard Oil\",\n  \"weight\": \"1L\",\n  \"price\": 499.0,\n  \"category\": \"Oils\",\n  \"description\": \"Traditional kolhu mustard oil.\",\n  \"ingredients\": [\n    \"mustard seeds\"\n  ],\n  \"sku\": \"HIM-MUS-1L\",\n  \"image_url\": null,\n  \"id\": \"92e44456-41a4-484e-a090-a8852d978e54\",\n  \"created_at\": \"2026-06-27T12:19:49.698191+00:00\",\n  \"updated_at\": \"2026-06-27T12:19:49.837577+00:00\"\n}"
+        }
+      ],
+      "notes": "Replace the ID in the URL with a real product ID"
+    },
+    {
+      "id": "p-09",
+      "name": "Delete product \u2192 204",
+      "method": "DELETE",
+      "url": "{{base_url}}/api/products/REPLACE-WITH-REAL-ID",
+      "containerId": "f-products",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Authorization",
+          "value": "Bearer {{admin_token}}"
+        }
+      ],
+      "body": {
+        "type": "none"
+      },
+      "tests": [
+        {
+          "type": "res-code",
+          "action": "equal",
+          "value": "204"
+        }
+      ],
+      "responses": [
+        {
+          "id": "p-09-example",
+          "name": "Example \u2014 204",
+          "status": 204,
+          "time": "12ms",
+          "headers": [
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "body": ""
+        }
+      ],
+      "notes": "Replace ID with a real product ID. Returns empty body on success."
+    },
+    {
+      "id": "p-10",
+      "name": "Create product \u2014 no auth \u2192 401",
+      "method": "POST",
+      "url": "{{base_url}}/api/products",
+      "containerId": "f-products",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"name\": \"Test\",\n  \"weight\": \"100g\",\n  \"price\": 50,\n  \"description\": \"Test.\",\n  \"ingredients\": [],\n  \"sku\": \"TST-001\"\n}"
+      },
+      "tests": [
+        {
+          "type": "res-code",
+          "action": "equal",
+          "value": "401"
+        }
+      ],
+      "responses": [
+        {
+          "id": "p-10-example",
+          "name": "Example \u2014 401",
+          "status": 401,
+          "time": "12ms",
+          "headers": [
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"detail\": \"Not authenticated. Provide a Bearer token.\"\n}"
+        }
+      ]
+    },
+    {
+      "id": "i-01",
+      "name": "List all inventory \u2192 200",
+      "method": "GET",
+      "url": "{{base_url}}/api/inventory",
+      "containerId": "f-inventory",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "type": "none"
+      },
+      "tests": [
+        {
+          "type": "res-code",
+          "action": "equal",
+          "value": "200"
+        }
+      ],
+      "responses": [
+        {
+          "id": "i-01-example",
+          "name": "Example \u2014 200",
+          "status": 200,
+          "time": "12ms",
+          "headers": [
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "body": "[\n  {\n    \"sku\": \"HIM-HON-500\",\n    \"item_type\": \"finished_good\",\n    \"unit\": \"units\",\n    \"current_quantity\": 340.0,\n    \"low_stock_threshold\": 50.0,\n    \"id\": \"c7e43278-3def-4261-bdbd-66b6c35e7286\",\n    \"is_low_stock\": false,\n    \"created_at\": \"2026-06-27T12:19:49.698191Z\",\n    \"updated_at\": \"2026-06-27T12:19:49.698191Z\"\n  },\n  {\n    \"sku\": \"HIM-LIT-150\",\n    \"item_type\": \"finished_good\",\n    \"unit\": \"units\",\n    \"current_quantity\": 610.0,\n    \"low_stock_threshold\": 80.0,\n    \"id\": \"aafb7b96-9bb6-4d60-b2a6-93a01d6ebc98\",\n    \"is_low_stock\": false,\n    \"created_at\": \"2026-06-27T12:19:49.698191Z\",\n    \"updated_at\": \"2026-06-27T12:19:49.698191Z\"\n  }\n]"
+        }
+      ]
+    },
+    {
+      "id": "i-02",
+      "name": "Low-stock alerts \u2192 200",
+      "method": "GET",
+      "url": "{{base_url}}/api/inventory/low-stock",
+      "containerId": "f-inventory",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "type": "none"
+      },
+      "tests": [
+        {
+          "type": "res-code",
+          "action": "equal",
+          "value": "200"
+        }
+      ],
+      "responses": [
+        {
+          "id": "i-02-example",
+          "name": "Example \u2014 200",
+          "status": 200,
+          "time": "12ms",
+          "headers": [
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "body": "[\n  {\n    \"sku\": \"HIM-MAK-200\",\n    \"item_type\": \"finished_good\",\n    \"unit\": \"units\",\n    \"current_quantity\": 40.0,\n    \"low_stock_threshold\": 60.0,\n    \"id\": \"1bd695aa-b932-4868-8c8c-53104e13f42b\",\n    \"is_low_stock\": true,\n    \"created_at\": \"2026-06-27T12:19:49.698191Z\",\n    \"updated_at\": \"2026-06-27T12:19:49.698191Z\"\n  }\n]"
+        }
+      ]
+    },
+    {
+      "id": "i-03",
+      "name": "Get single inventory item \u2192 200",
+      "method": "GET",
+      "url": "{{base_url}}/api/inventory/c7e43278-3def-4261-bdbd-66b6c35e7286",
+      "containerId": "f-inventory",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "type": "none"
+      },
+      "tests": [
+        {
+          "type": "res-code",
+          "action": "equal",
+          "value": "200"
+        }
+      ],
+      "responses": [
+        {
+          "id": "i-03-example",
+          "name": "Example \u2014 200",
+          "status": 200,
+          "time": "12ms",
+          "headers": [
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"sku\": \"HIM-HON-500\",\n  \"item_type\": \"finished_good\",\n  \"unit\": \"units\",\n  \"current_quantity\": 340.0,\n  \"low_stock_threshold\": 50.0,\n  \"id\": \"c7e43278-3def-4261-bdbd-66b6c35e7286\",\n  \"is_low_stock\": false,\n  \"created_at\": \"2026-06-27T12:19:49.698191Z\",\n  \"updated_at\": \"2026-06-27T12:19:49.698191Z\"\n}"
+        }
+      ],
+      "notes": "Replace ID with a real inventory item ID from the list"
+    },
+    {
+      "id": "i-04",
+      "name": "Stock in \u2014 restock Makhana \u2192 201",
+      "method": "POST",
+      "url": "{{base_url}}/api/inventory/transactions",
+      "containerId": "f-inventory",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"sku\": \"HIM-MAK-200\",\n  \"direction\": \"in\",\n  \"quantity\": 100,\n  \"batch_id\": \"HK-2026-001\",\n  \"note\": \"Restocked\"\n}"
+      },
+      "tests": [
+        {
+          "type": "res-code",
+          "action": "equal",
+          "value": "201"
+        }
+      ],
+      "responses": [
+        {
+          "id": "i-04-example",
+          "name": "Example \u2014 201",
+          "status": 201,
+          "time": "12ms",
+          "headers": [
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"sku\": \"HIM-MAK-200\",\n  \"direction\": \"in\",\n  \"quantity\": 100.0,\n  \"batch_id\": \"HK-2026-001\",\n  \"note\": \"Restocked\",\n  \"id\": \"f8d21179-2d19-42e1-81e9-a6502df84b0e\",\n  \"timestamp\": \"2026-06-27T12:19:49.848900Z\",\n  \"resulting_quantity\": 140.0\n}"
+        }
+      ]
+    },
+    {
+      "id": "i-05",
+      "name": "Stock out \u2014 overdraft \u2192 400",
+      "method": "POST",
+      "url": "{{base_url}}/api/inventory/transactions",
+      "containerId": "f-inventory",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"sku\": \"HIM-MAK-200\",\n  \"direction\": \"out\",\n  \"quantity\": 99999\n}"
+      },
+      "tests": [
+        {
+          "type": "res-code",
+          "action": "equal",
+          "value": "400"
+        }
+      ],
+      "responses": [
+        {
+          "id": "i-05-example",
+          "name": "Example \u2014 400",
+          "status": 400,
+          "time": "12ms",
+          "headers": [
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"detail\": \"Cannot remove 99999.0 units \\u2014 only 140.0 on hand.\"\n}"
+        }
+      ]
+    },
+    {
+      "id": "i-06",
+      "name": "List all transactions \u2192 200",
+      "method": "GET",
+      "url": "{{base_url}}/api/inventory/transactions",
+      "containerId": "f-inventory",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "type": "none"
+      },
+      "tests": [
+        {
+          "type": "res-code",
+          "action": "equal",
+          "value": "200"
+        }
+      ],
+      "responses": [
+        {
+          "id": "i-06-example",
+          "name": "Example \u2014 200",
+          "status": 200,
+          "time": "12ms",
+          "headers": [
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "body": "[\n  {\n    \"sku\": \"HIM-MAK-200\",\n    \"direction\": \"in\",\n    \"quantity\": 100.0,\n    \"batch_id\": \"HK-2026-001\",\n    \"note\": \"Restocked\",\n    \"id\": \"f8d21179-2d19-42e1-81e9-a6502df84b0e\",\n    \"timestamp\": \"2026-06-27T12:19:49.848900Z\",\n    \"resulting_quantity\": 140.0\n  }\n]"
+        }
+      ]
+    },
+    {
+      "id": "q-01",
+      "name": "Log QC record \u2192 201",
+      "method": "POST",
+      "url": "{{base_url}}/api/qc",
+      "containerId": "f-qc",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"batch_id\": \"HK-2026-001\",\n  \"product_sku\": \"HIM-TUR-250\",\n  \"status\": \"pass\",\n  \"checks\": [\n    {\n      \"check_name\": \"Moisture\",\n      \"passed\": true,\n      \"note\": \"8%\"\n    },\n    {\n      \"check_name\": \"Weight accuracy\",\n      \"passed\": true\n    }\n  ],\n  \"checked_by\": \"Ravi Kumar\"\n}"
+      },
+      "tests": [
+        {
+          "type": "res-code",
+          "action": "equal",
+          "value": "201"
+        }
+      ],
+      "responses": [
+        {
+          "id": "q-01-example",
+          "name": "Example \u2014 201",
+          "status": 201,
+          "time": "12ms",
+          "headers": [
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"batch_id\": \"HK-2026-001\",\n  \"product_sku\": \"HIM-TUR-250\",\n  \"status\": \"pass\",\n  \"checks\": [\n    {\n      \"check_name\": \"Moisture\",\n      \"passed\": true,\n      \"note\": \"8%\"\n    },\n    {\n      \"check_name\": \"Weight accuracy\",\n      \"passed\": true,\n      \"note\": null\n    }\n  ],\n  \"checked_by\": \"Ravi Kumar\",\n  \"id\": \"c1e04b01-1407-40bd-afdd-a81a015c0dcc\",\n  \"timestamp\": \"2026-06-27T12:19:49.854954Z\"\n}"
+        }
+      ]
+    },
+    {
+      "id": "q-02",
+      "name": "List all QC records \u2192 200",
+      "method": "GET",
+      "url": "{{base_url}}/api/qc",
+      "containerId": "f-qc",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "type": "none"
+      },
+      "tests": [
+        {
+          "type": "res-code",
+          "action": "equal",
+          "value": "200"
+        }
+      ],
+      "responses": [
+        {
+          "id": "q-02-example",
+          "name": "Example \u2014 200",
+          "status": 200,
+          "time": "12ms",
+          "headers": [
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "body": "[\n  {\n    \"batch_id\": \"HK-2026-001\",\n    \"product_sku\": \"HIM-TUR-250\",\n    \"status\": \"pass\",\n    \"checks\": [\n      {\n        \"check_name\": \"Moisture\",\n        \"passed\": true,\n        \"note\": \"8%\"\n      }\n    ],\n    \"checked_by\": \"Ravi Kumar\",\n    \"id\": \"c1e04b01-1407-40bd-afdd-a81a015c0dcc\",\n    \"timestamp\": \"2026-06-27T12:19:49.854954Z\"\n  }\n]"
+        }
+      ]
+    },
+    {
+      "id": "pr-01",
+      "name": "Log production run \u2192 201",
+      "method": "POST",
+      "url": "{{base_url}}/api/production",
+      "containerId": "f-production",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"batch_id\": \"HK-2026-001\",\n  \"product_sku\": \"HIM-TUR-250\",\n  \"quantity_produced\": 180,\n  \"start_time\": \"2026-06-25T06:00:00Z\",\n  \"end_time\": \"2026-06-25T10:30:00Z\",\n  \"downtime_notes\": null\n}"
+      },
+      "tests": [
+        {
+          "type": "res-code",
+          "action": "equal",
+          "value": "201"
+        }
+      ],
+      "responses": [
+        {
+          "id": "pr-01-example",
+          "name": "Example \u2014 201",
+          "status": 201,
+          "time": "12ms",
+          "headers": [
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"batch_id\": \"HK-2026-001\",\n  \"product_sku\": \"HIM-TUR-250\",\n  \"quantity_produced\": 180.0,\n  \"start_time\": \"2026-06-25T06:00:00Z\",\n  \"end_time\": \"2026-06-25T10:30:00Z\",\n  \"downtime_notes\": null,\n  \"id\": \"bd05c94d-e2f6-40c9-ad76-aa604904e44d\",\n  \"duration_minutes\": 270.0,\n  \"created_at\": \"2026-06-27T12:19:49.859159Z\"\n}"
+        }
+      ]
+    },
+    {
+      "id": "pr-02",
+      "name": "List all production runs \u2192 200",
+      "method": "GET",
+      "url": "{{base_url}}/api/production",
+      "containerId": "f-production",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "type": "none"
+      },
+      "tests": [
+        {
+          "type": "res-code",
+          "action": "equal",
+          "value": "200"
+        }
+      ],
+      "responses": [
+        {
+          "id": "pr-02-example",
+          "name": "Example \u2014 200",
+          "status": 200,
+          "time": "12ms",
+          "headers": [
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "body": "[\n  {\n    \"batch_id\": \"HK-2026-001\",\n    \"product_sku\": \"HIM-TUR-250\",\n    \"quantity_produced\": 180.0,\n    \"start_time\": \"2026-06-25T06:00:00Z\",\n    \"end_time\": \"2026-06-25T10:30:00Z\",\n    \"downtime_notes\": null,\n    \"id\": \"bd05c94d-e2f6-40c9-ad76-aa604904e44d\",\n    \"duration_minutes\": 270.0,\n    \"created_at\": \"2026-06-27T12:19:49.859159Z\"\n  }\n]"
+        }
+      ]
+    },
+    {
+      "id": "in-01",
+      "name": "Log WhatsApp inquiry \u2192 201",
+      "method": "POST",
+      "url": "{{base_url}}/api/inquiries",
+      "containerId": "f-inquiries",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"product_id\": \"92e44456-41a4-484e-a090-a8852d978e54\",\n  \"message\": \"Hi HimShakti, I'd like to order Pahadi Wild Honey (500g) \\u2014 Qty: 2\",\n  \"customer_name\": \"Priya Sharma\",\n  \"customer_phone\": \"+91 98765 43210\"\n}"
+      },
+      "tests": [
+        {
+          "type": "res-code",
+          "action": "equal",
+          "value": "201"
+        }
+      ],
+      "responses": [
+        {
+          "id": "in-01-example",
+          "name": "Example \u2014 201",
+          "status": 201,
+          "time": "12ms",
+          "headers": [
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"product_id\": \"92e44456-41a4-484e-a090-a8852d978e54\",\n  \"message\": \"Hi HimShakti, I'd like to order Pahadi Wild Honey (500g) \\u2014 Qty: 2\",\n  \"customer_name\": \"Priya Sharma\",\n  \"customer_phone\": \"+91 98765 43210\",\n  \"id\": \"fc66af3d-e1c8-4cea-9ae1-e6cd520ea809\",\n  \"timestamp\": \"2026-06-27T12:19:49.863051Z\"\n}"
+        }
+      ]
+    },
+    {
+      "id": "in-02",
+      "name": "List all inquiries \u2192 200",
+      "method": "GET",
+      "url": "{{base_url}}/api/inquiries",
+      "containerId": "f-inquiries",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "type": "none"
+      },
+      "tests": [
+        {
+          "type": "res-code",
+          "action": "equal",
+          "value": "200"
+        }
+      ],
+      "responses": [
+        {
+          "id": "in-02-example",
+          "name": "Example \u2014 200",
+          "status": 200,
+          "time": "12ms",
+          "headers": [
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "body": "[\n  {\n    \"product_id\": \"92e44456-41a4-484e-a090-a8852d978e54\",\n    \"message\": \"Hi HimShakti, I'd like to order Pahadi Wild Honey (500g) \\u2014 Qty: 2\",\n    \"customer_name\": \"Priya Sharma\",\n    \"customer_phone\": \"+91 98765 43210\",\n    \"id\": \"fc66af3d-e1c8-4cea-9ae1-e6cd520ea809\",\n    \"timestamp\": \"2026-06-27T12:19:49.863051Z\"\n  }\n]"
+        }
+      ]
+    }
+  ],
+  "settings": {
+    "baseUrl": "http://localhost:8000",
+    "envName": "Local",
+    "variables": [
+      {
+        "name": "base_url",
+        "value": "http://localhost:8000"
+      },
+      {
+        "name": "admin_token",
+        "value": "paste-token-from-login-response-here"
+      }
+    ]
+  }
+}
