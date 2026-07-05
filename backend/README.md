@@ -113,3 +113,32 @@ backend/
 | GET/POST | `/api/production` | List / create production runs |
 | GET | `/api/production/{id}` | Single production run |
 | GET/POST | `/api/inquiries` | List / create WhatsApp inquiries |
+
+## Database
+
+**Choice:** MongoDB Atlas (cloud-hosted MongoDB)
+
+**Why MongoDB:**
+- Document-based storage fits the product catalog naturally — each product, inventory item, and batch record is a self-contained document
+- MongoDB Atlas provides a free tier with no server setup required
+- Beanie ODM (built on Motor) gives async Python support that pairs well with FastAPI
+
+## Schema
+
+| Collection | Key fields |
+|---|---|
+| `products` | name, weight, price, description, ingredients, sku, image_url, category |
+| `inventory` | sku, item_type, unit, current_quantity, low_stock_threshold, is_low_stock |
+| `transactions` | sku, direction, quantity, batch_id, resulting_quantity, timestamp |
+| `qc_records` | batch_id, product_sku, status, checks, checked_by, timestamp |
+| `production_runs` | batch_id, product_sku, quantity_produced, start_time, end_time, duration_minutes |
+| `inquiries` | product_id, message, customer_name, customer_phone, timestamp |
+
+## Set up the database
+
+1. Create a free account at [mongodb.com/atlas](https://mongodb.com/atlas)
+2. Create a cluster named `foodflow`
+3. Create a database user under **Database Access**
+4. Whitelist your IP under **Network Access** (or allow all: `0.0.0.0/0`)
+5. Get your connection string: **Connect → Drivers → Python**
+6. Add to your `.env` file:
