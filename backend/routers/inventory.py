@@ -1,124 +1,110 @@
 """
-routers/inventory.py
-
-GET    /api/inventory                   — list all inventory items
-GET    /api/inventory/low-stock         — items below their low_stock_threshold
-GET    /api/inventory/{id}              — get one inventory item
-POST   /api/inventory                   — create an inventory item     → 201
-POST   /api/inventory/transactions      — log a stock in/out           → 201
-GET    /api/inventory/transactions      — list all transactions
+routers/inventory.py — MongoDB version
 """
 from datetime import datetime, timezone
-import uuid
-
 from fastapi import APIRouter, HTTPException, status
-from models import InventoryItem, InventoryItemCreate, Transaction, TransactionCreate
-import store
+from pydantic import BaseModel, Field
+from typing import Optional
+
+from models.inventory import InventoryItem, Transaction
 
 router = APIRouter(prefix="/api/inventory", tags=["Inventory"])
 
 
-def _now() -> datetime:
+def _now():
     return datetime.now(timezone.utc)
 
 
-def _find(item_id: str) -> dict:
-    item = store.inventory.get(item_id)
+class InventoryItemCreate(BaseModel):
+    sku: str
+    item_type: str = Field(..., pattern="^(raw_material|finished_good)$")
+    unit: str
+    current_quantity: float = 0.0
+    low_stock_threshold: float = 50.0
+
+
+class TransactionCreate(BaseModel):
+    sku: str
+    direction: str = Field(..., pattern="^(in|out)$")
+    quantity: float = Field(..., gt=0)
+    batch_id: Optional[str] = None
+    note: Optional[str] = None
+
+
+def item_to_dict(i):
+    d = i.model_dump()
+    d["id"] = str(i.id)
+    d.pop("revision_id", None)
+    return d
+
+
+@router.get("", status_code=200)
+async def list_inventory():
+    items = await InventoryItem.find_all().to_list()
+    return sorted([item_to_dict(i) for i in items], key=lambda x: x["sku"])
+
+
+@router.get("/low-stock", status_code=200)
+async def low_stock_items():
+    items = await InventoryItem.find(InventoryItem.is_low_stock == True).to_list()
+    return [item_to_dict(i) for i in items]
+
+
+@router.get("/transactions", status_code=200)
+async def list_transactions():
+    txns = await Transaction.find_all().to_list()
+    return sorted([item_to_dict(t) for t in txns], key=lambda x: str(x["timestamp"]), reverse=True)
+
+
+@router.get("/{item_id}", status_code=200)
+async def get_inventory_item(item_id: str):
+    try:
+        item = await InventoryItem.get(item_id)
+    except Exception:
+        raise HTTPException(status_code=404, detail=f"Inventory item '{item_id}' not found.")
     if not item:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                            detail=f"Inventory item '{item_id}' not found.")
-    return item
+        raise HTTPException(status_code=404, detail=f"Inventory item '{item_id}' not found.")
+    return item_to_dict(item)
 
 
-# ── GET /api/inventory ───────────────────────────────────────────────────────
-
-@router.get("", response_model=list[InventoryItem], status_code=status.HTTP_200_OK,
-            summary="List all inventory items")
-def list_inventory():
-    with store.get_lock():
-        return sorted(store.inventory.values(), key=lambda i: i["sku"])
-
-
-# ── GET /api/inventory/low-stock ─────────────────────────────────────────────
-
-@router.get("/low-stock", response_model=list[InventoryItem], status_code=status.HTTP_200_OK,
-            summary="List items below their low-stock threshold")
-def low_stock_items():
-    with store.get_lock():
-        return [i for i in store.inventory.values() if i["is_low_stock"]]
+@router.post("", status_code=201)
+async def create_inventory_item(body: InventoryItemCreate):
+    existing = await InventoryItem.find_one(InventoryItem.sku == body.sku)
+    if existing:
+        raise HTTPException(status_code=400, detail=f"SKU '{body.sku}' already exists.")
+    item = InventoryItem(
+        **body.model_dump(),
+        is_low_stock=body.current_quantity < body.low_stock_threshold
+    )
+    await item.insert()
+    return item_to_dict(item)
 
 
-# ── GET /api/inventory/transactions ──────────────────────────────────────────
+@router.post("/transactions", status_code=201)
+async def log_transaction(body: TransactionCreate):
+    item = await InventoryItem.find_one(InventoryItem.sku == body.sku)
+    if not item:
+        raise HTTPException(status_code=404, detail=f"No inventory item with SKU '{body.sku}'.")
 
-@router.get("/transactions", response_model=list[Transaction], status_code=status.HTTP_200_OK,
-            summary="List all stock transactions (newest first)")
-def list_transactions():
-    with store.get_lock():
-        return sorted(store.transactions, key=lambda t: t["timestamp"], reverse=True)
+    if body.direction == "in":
+        item.current_quantity += body.quantity
+    else:
+        if item.current_quantity < body.quantity:
+            raise HTTPException(status_code=400,
+                detail=f"Cannot remove {body.quantity} {item.unit} — only {item.current_quantity} on hand.")
+        item.current_quantity -= body.quantity
 
+    item.is_low_stock = item.current_quantity < item.low_stock_threshold
+    item.updated_at = _now()
+    await item.save()
 
-# ── GET /api/inventory/{id} ──────────────────────────────────────────────────
-
-@router.get("/{item_id}", response_model=InventoryItem, status_code=status.HTTP_200_OK,
-            summary="Get a single inventory item by ID")
-def get_inventory_item(item_id: str):
-    with store.get_lock():
-        return _find(item_id)
-
-
-# ── POST /api/inventory ──────────────────────────────────────────────────────
-
-@router.post("", response_model=InventoryItem, status_code=status.HTTP_201_CREATED,
-             summary="Create a new inventory item")
-def create_inventory_item(body: InventoryItemCreate):
-    with store.get_lock():
-        if any(i["sku"] == body.sku for i in store.inventory.values()):
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
-                                detail=f"An inventory item with SKU '{body.sku}' already exists.")
-        now = _now()
-        iid = str(uuid.uuid4())
-        item = {
-            **body.model_dump(),
-            "id": iid,
-            "is_low_stock": body.current_quantity < body.low_stock_threshold,
-            "created_at": now,
-            "updated_at": now,
-        }
-        store.inventory[iid] = item
-        return item
-
-
-# ── POST /api/inventory/transactions ─────────────────────────────────────────
-
-@router.post("/transactions", response_model=Transaction, status_code=status.HTTP_201_CREATED,
-             summary="Log a stock-in or stock-out transaction")
-def log_transaction(body: TransactionCreate):
-    with store.get_lock():
-        # Find the inventory item by SKU
-        item = next((i for i in store.inventory.values() if i["sku"] == body.sku), None)
-        if not item:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                                detail=f"No inventory item found with SKU '{body.sku}'.")
-
-        # Apply the transaction
-        if body.direction == "in":
-            item["current_quantity"] += body.quantity
-        else:
-            if item["current_quantity"] < body.quantity:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail=f"Cannot remove {body.quantity} {item['unit']} — only "
-                           f"{item['current_quantity']} on hand.")
-            item["current_quantity"] -= body.quantity
-
-        item["is_low_stock"] = item["current_quantity"] < item["low_stock_threshold"]
-        item["updated_at"] = _now()
-
-        txn = {
-            **body.model_dump(),
-            "id": str(uuid.uuid4()),
-            "timestamp": _now(),
-            "resulting_quantity": item["current_quantity"],
-        }
-        store.transactions.append(txn)
-        return txn
+    txn = Transaction(
+        sku=body.sku,
+        direction=body.direction,
+        quantity=body.quantity,
+        batch_id=body.batch_id,
+        note=body.note,
+        resulting_quantity=item.current_quantity,
+    )
+    await txn.insert()
+    return item_to_dict(txn)

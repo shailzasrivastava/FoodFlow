@@ -1,31 +1,36 @@
 """
-routers/inquiries.py — WhatsApp order inquiry logging
-
-POST   /api/inquiries       — log an inquiry           → 201
-GET    /api/inquiries       — list all inquiries
+routers/inquiries.py — MongoDB version
 """
-from datetime import datetime, timezone
-import uuid
-from fastapi import APIRouter, status
-from models import Inquiry, InquiryCreate
-import store
+from fastapi import APIRouter
+from pydantic import BaseModel
+from typing import Optional
+from models.inquiry import Inquiry
 
 router = APIRouter(prefix="/api/inquiries", tags=["Inquiries"])
 
-def _now(): return datetime.now(timezone.utc)
+
+class InquiryCreate(BaseModel):
+    product_id: str
+    message: str
+    customer_name: Optional[str] = None
+    customer_phone: Optional[str] = None
 
 
-@router.get("", response_model=list[Inquiry], status_code=200,
-            summary="List all WhatsApp inquiries (newest first)")
-def list_inquiries():
-    with store.get_lock():
-        return sorted(store.inquiries, key=lambda i: i["timestamp"], reverse=True)
+def to_dict(i):
+    d = i.model_dump()
+    d["id"] = str(i.id)
+    d.pop("revision_id", None)
+    return d
 
 
-@router.post("", response_model=Inquiry, status_code=201,
-             summary="Log a new WhatsApp order inquiry")
-def create_inquiry(body: InquiryCreate):
-    with store.get_lock():
-        inquiry = {**body.model_dump(), "id": str(uuid.uuid4()), "timestamp": _now()}
-        store.inquiries.append(inquiry)
-        return inquiry
+@router.get("", status_code=200)
+async def list_inquiries():
+    items = await Inquiry.find_all().to_list()
+    return sorted([to_dict(i) for i in items], key=lambda x: str(x["timestamp"]), reverse=True)
+
+
+@router.post("", status_code=201)
+async def create_inquiry(body: InquiryCreate):
+    inquiry = Inquiry(**body.model_dump())
+    await inquiry.insert()
+    return to_dict(inquiry)

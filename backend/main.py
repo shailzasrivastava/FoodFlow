@@ -1,22 +1,32 @@
 """
-main.py — Foodflow FastAPI backend
+main.py — Foodflow FastAPI backend with MongoDB Atlas
 Run: uvicorn main:app --reload
-Docs: http://localhost:8000/docs
 """
 import os
+from contextlib import asynccontextmanager
 from dotenv import load_dotenv
 from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import ValidationError
+
+from database import init_db
 from routers import products, inventory, qc, production, inquiries, auth
 
 load_dotenv()
 
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await init_db()
+    yield
+
+
 app = FastAPI(
     title="Foodflow API",
     description="HimShakti Food Processing Unit — D2C storefront + operations platform.",
-    version="0.2.0",
+    version="0.3.0",
+    lifespan=lifespan,
 )
 
 FRONTEND_ORIGIN = os.getenv("FRONTEND_ORIGIN", "http://localhost:5173")
@@ -51,7 +61,7 @@ app.include_router(inquiries.router)
 
 @app.get("/", tags=["Health"])
 def root():
-    return {"status": "ok", "service": "Foodflow API", "version": "0.2.0"}
+    return {"status": "ok", "service": "Foodflow API", "version": "0.3.0"}
 
 
 @app.get("/health", tags=["Health"])

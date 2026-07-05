@@ -1,42 +1,54 @@
 """
-routers/qc.py — Quality control batch logging
-
-POST   /api/qc          — log a QC record for a batch     → 201
-GET    /api/qc          — list all QC records
-GET    /api/qc/{id}     — get a single QC record
+routers/qc.py — MongoDB version
 """
-from datetime import datetime, timezone
-import uuid
-from fastapi import APIRouter, HTTPException, status
-from models import QCRecord, QCRecordCreate
-import store
+from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel
+from typing import Optional
+from models.qc import QCRecord
 
 router = APIRouter(prefix="/api/qc", tags=["Quality Control"])
 
-def _now(): return datetime.now(timezone.utc)
+
+class QCCheckResult(BaseModel):
+    check_name: str
+    passed: bool
+    note: Optional[str] = None
 
 
-@router.get("", response_model=list[QCRecord], status_code=200,
-            summary="List all QC records (newest first)")
-def list_qc():
-    with store.get_lock():
-        return sorted(store.qc_records, key=lambda r: r["timestamp"], reverse=True)
+class QCRecordCreate(BaseModel):
+    batch_id: str
+    product_sku: str
+    status: str
+    checks: list[QCCheckResult] = []
+    checked_by: str
 
 
-@router.get("/{record_id}", response_model=QCRecord, status_code=200,
-            summary="Get a single QC record")
-def get_qc(record_id: str):
-    with store.get_lock():
-        rec = next((r for r in store.qc_records if r["id"] == record_id), None)
-        if not rec:
-            raise HTTPException(status_code=404, detail=f"QC record '{record_id}' not found.")
-        return rec
+def to_dict(r):
+    d = r.model_dump()
+    d["id"] = str(r.id)
+    d.pop("revision_id", None)
+    return d
 
 
-@router.post("", response_model=QCRecord, status_code=201,
-             summary="Log a QC check result for a batch")
-def create_qc(body: QCRecordCreate):
-    with store.get_lock():
-        record = {**body.model_dump(), "id": str(uuid.uuid4()), "timestamp": _now()}
-        store.qc_records.append(record)
-        return record
+@router.get("", status_code=200)
+async def list_qc():
+    records = await QCRecord.find_all().to_list()
+    return sorted([to_dict(r) for r in records], key=lambda x: str(x["timestamp"]), reverse=True)
+
+
+@router.get("/{record_id}", status_code=200)
+async def get_qc(record_id: str):
+    try:
+        r = await QCRecord.get(record_id)
+    except Exception:
+        raise HTTPException(status_code=404, detail=f"QC record '{record_id}' not found.")
+    if not r:
+        raise HTTPException(status_code=404, detail=f"QC record '{record_id}' not found.")
+    return to_dict(r)
+
+
+@router.post("", status_code=201)
+async def create_qc(body: QCRecordCreate):
+    record = QCRecord(**body.model_dump())
+    await record.insert()
+    return to_dict(record)
