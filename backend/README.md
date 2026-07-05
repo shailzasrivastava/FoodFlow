@@ -142,3 +142,6 @@ backend/
 4. Whitelist your IP under **Network Access** (or allow all: `0.0.0.0/0`)
 5. Get your connection string: **Connect → Drivers → Python**
 6. Add to your `.env` file:
+
+## Schema diagram
+   ![Foodflow schema diagram](schema-diagram.png)
