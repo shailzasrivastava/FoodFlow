@@ -8,7 +8,12 @@ export class ApiError extends Error {
   }
 }
 
-async function request(method, path, body, token) {
+function getToken() {
+  return localStorage.getItem('foodflow-token')
+}
+
+async function request(method, path, body, customToken) {
+  const token = customToken || getToken()
   const headers = { 'Content-Type': 'application/json' }
   if (token) headers['Authorization'] = `Bearer ${token}`
   const options = { method, headers }
@@ -18,7 +23,9 @@ async function request(method, path, body, token) {
   if (res.status === 204) return null
   const data = await res.json().catch(() => ({ detail: res.statusText }))
   if (!res.ok) {
-    const detail = typeof data.detail === 'string' ? data.detail : JSON.stringify(data.detail)
+    const detail = typeof data.detail === 'string'
+      ? data.detail
+      : JSON.stringify(data.detail)
     throw new ApiError(res.status, detail)
   }
   return data

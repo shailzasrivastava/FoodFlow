@@ -1,5 +1,5 @@
 """
-main.py — Foodflow FastAPI backend with MongoDB Atlas
+main.py — Foodflow FastAPI backend with MongoDB Atlas + JWT Auth
 Run: uvicorn main:app --reload
 """
 import os
@@ -9,11 +9,16 @@ from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import ValidationError
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 
 from database import init_db
 from routers import products, inventory, qc, production, inquiries, auth
 
 load_dotenv()
+
+limiter = Limiter(key_func=get_remote_address)
 
 
 @asynccontextmanager
@@ -25,9 +30,12 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="Foodflow API",
     description="HimShakti Food Processing Unit — D2C storefront + operations platform.",
-    version="0.3.0",
+    version="0.4.0",
     lifespan=lifespan,
 )
+
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 FRONTEND_ORIGIN = os.getenv("FRONTEND_ORIGIN", "http://localhost:5173")
 
@@ -47,8 +55,10 @@ async def validation_exception_handler(request: Request, exc: ValidationError):
 
 @app.exception_handler(Exception)
 async def generic_exception_handler(request: Request, exc: Exception):
-    return JSONResponse(status_code=500,
-                        content={"detail": "Unexpected error. Please try again."})
+    return JSONResponse(
+        status_code=500,
+        content={"detail": "Unexpected error. Please try again."},
+    )
 
 
 app.include_router(auth.router)
@@ -61,7 +71,7 @@ app.include_router(inquiries.router)
 
 @app.get("/", tags=["Health"])
 def root():
-    return {"status": "ok", "service": "Foodflow API", "version": "0.3.0"}
+    return {"status": "ok", "service": "Foodflow API", "version": "0.4.0"}
 
 
 @app.get("/health", tags=["Health"])

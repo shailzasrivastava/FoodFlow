@@ -16,7 +16,7 @@ from fastapi import APIRouter, HTTPException, Query, Depends, status
 from pydantic import BaseModel, Field
 
 from models.product import Product
-from routers.auth import get_admin
+from utils.jwt import get_admin_user as get_admin
 
 router = APIRouter(prefix="/api/products", tags=["Products"])
 

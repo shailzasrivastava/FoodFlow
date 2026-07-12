@@ -11,6 +11,7 @@ from models.inventory import InventoryItem, Transaction
 from models.qc import QCRecord
 from models.production import ProductionRun
 from models.inquiry import Inquiry
+from models.user import User
 
 load_dotenv()
 
@@ -25,16 +26,17 @@ async def init_db():
     client = AsyncIOMotorClient(mongo_uri)
 
     await init_beanie(
-        database=client[db_name],
-        document_models=[
-            Product,
-            InventoryItem,
-            Transaction,
-            QCRecord,
-            ProductionRun,
-            Inquiry,
-        ]
-    )
+    database=client[db_name],
+    document_models=[
+        Product,
+        InventoryItem,
+        Transaction,
+        QCRecord,
+        ProductionRun,
+        Inquiry,
+        User,
+    ]
+)
 
     print(f"Connected to MongoDB Atlas — database: {db_name}")
     await seed_if_empty()
